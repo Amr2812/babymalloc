@@ -69,6 +69,7 @@ static void *extend_heap(size_t size) {
     return blkp;
 }
 
+// first-fit algorithm
 static void *find_fit(size_t size) {
     void *blkp = heap_startp;
 
@@ -86,4 +87,16 @@ static void *find_fit(size_t size) {
 static void insert_block(void *blkp, size_t size) {
     SET_USED(blkp); // set header
     SET_USED(blkp + size + WSIZE); // set footer
+}
+
+void print_heap() {
+    void *blkp = heap_startp;
+    while (*(uint64_t *) blkp) {
+        if (GET_USED(blkp)) {
+            printf("Block at %p: size %lu, used\n", blkp, GET_SIZE(blkp));
+        } else {
+            printf("Block at %p: size %lu, free\n", blkp, GET_SIZE(blkp));
+        }
+        blkp += (GET_SIZE(blkp) + 2 * WSIZE);
+    }
 }

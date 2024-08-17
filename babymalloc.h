@@ -5,5 +5,6 @@
 
 void *babymalloc(size_t size);
 void babyfree(void *ptr);
+void print_heap();
 
 #endif //BABYMALLOC_BABYMALLOC_H
