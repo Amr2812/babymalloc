@@ -12,10 +12,10 @@
 #define GET_USED(p) (*(uint64_t *) (p) & 0x1) // 0 for free, 1 for used
 #define SET_USED(p) (*(uint64_t *) (p) |= 0x1)
 #define SET_FREE(p) (*(uint64_t *) (p) &= ~0x1)
-#define GET_NEXT_BLKP(p) ((p) + GET_SIZE(p) + 2 * WSIZE)
-#define GET_BLK_FOOTER(p) ((p) + GET_SIZE(p) + WSIZE)
-#define GET_PREV_BLKP(p) ((p) - (GET_SIZE((p) - WSIZE) + 2 * WSIZE))
-#define GET_PAYLOAD(p) ((p) + WSIZE)
+#define GET_NEXT_BLKP(p) ((char *) (p) + GET_SIZE(p) + 2 * WSIZE)
+#define GET_BLK_FOOTER(p) ((char *) (p) + GET_SIZE(p) + WSIZE)
+#define GET_PREV_BLKP(p) ((char *) (p) - (GET_SIZE((p) - WSIZE) + 2 * WSIZE))
+#define GET_PAYLOAD(p) ((char *) (p) + WSIZE)
 
 #ifdef DEBUG
 #define debug_print(fmt, ...) printf(fmt, __VA_ARGS__)
@@ -33,6 +33,10 @@ static void coalesce(void *blkp);
 
 void *babymalloc(size_t size) {
     size = ALIGN(size);
+    if (size > INT64_MAX) {
+        return NULL;
+    }
+
     if (!heap_startp) {
         heap_startp = extend_heap(size);
         heap_endp = GET_NEXT_BLKP(heap_startp);
@@ -60,7 +64,7 @@ void *babymalloc(size_t size) {
 }
 
 void babyfree(void *ptr) {
-    void *blkp = ptr - WSIZE;
+    void *blkp = (char *) ptr - WSIZE;
     SET_FREE(blkp);
     SET_FREE(GET_BLK_FOOTER(blkp));
     memset(ptr, 0, GET_SIZE(blkp));
@@ -68,14 +72,14 @@ void babyfree(void *ptr) {
 }
 
 void new_heap() {
-    size_t heap_size = heap_endp - heap_startp;
+    size_t heap_size = (char *) heap_endp - (char *) heap_startp;
     memset(heap_startp, 0, heap_size);
     heap_startp = NULL;
     heap_endp = NULL;
 }
 
 static void *extend_heap(size_t size) {
-    void *blkp = sbrk(size + 2 * WSIZE);  // 2 words for header and footer
+    void *blkp = sbrk((intptr_t) size + 2 * WSIZE);  // 2 words for header and footer
     if (blkp == (void *) -1) {
         return NULL;
     }
@@ -109,7 +113,7 @@ static void insert_block(void *blkp, size_t size) {
 }
 
 static void coalesce(void *blkp) {
-    uint64_t blk_size = GET_SIZE(blkp);
+    size_t blk_size = GET_SIZE(blkp);
     void *prev_blkp = NULL;
     void *next_blkp = GET_NEXT_BLKP(blkp);
 
@@ -145,7 +149,7 @@ static void coalesce(void *blkp) {
     } else if (coalesce_prev) {
         blk_size += GET_SIZE(prev_blkp) + 2 * WSIZE;
         *(uint64_t *) prev_blkp = blk_size;
-        void *blk_footer = blkp + blk_size + WSIZE;
+        void *blk_footer = GET_BLK_FOOTER(blkp);
         *(uint64_t *) blk_footer = blk_size;
         SET_FREE(prev_blkp);
         SET_FREE(blk_footer);
