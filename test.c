@@ -3,6 +3,7 @@
 //
 
 #include <assert.h>
+#include <stdio.h>
 
 #include "babymalloc.h"
 
@@ -74,6 +75,8 @@ int main(int argc, char **argv) {
 
     new_heap();
     test_next_and_prev_block_coalescing();
+
+    printf("All tests passed!\n");
 
     return 0;
 }
