@@ -63,6 +63,13 @@ void babyfree(void *ptr) {
     coalesce(blkp);
 }
 
+void new_heap() {
+    size_t heap_size = heap_endp - heap_startp;
+    memset(heap_startp, 0, heap_size);
+    heap_startp = NULL;
+    heap_endp = NULL;
+}
+
 static void *extend_heap(size_t size) {
     void *blkp = sbrk(size + 2 * WSIZE);  // 2 words for header and footer
     if (blkp == (void *) -1) {
