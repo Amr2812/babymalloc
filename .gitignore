@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Prerequisites
 *.d
 
@@ -51,38 +50,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-=======
-/cmake-build-debug/.cmake/api/v1/query/cache-v2
-/cmake-build-debug/.cmake/api/v1/query/cmakeFiles-v1
-/cmake-build-debug/.cmake/api/v1/query/codemodel-v2
-/cmake-build-debug/.cmake/api/v1/query/toolchains-v1
-/cmake-build-debug/.cmake/api/v1/reply/cache-v2-efaefa21aa80815dab79.json
-/cmake-build-debug/.cmake/api/v1/reply/cmakeFiles-v1-c9787cf160ea06e5b07c.json
-/cmake-build-debug/.cmake/api/v1/reply/codemodel-v2-7a3bae4701e2bea7e819.json
-/cmake-build-debug/.cmake/api/v1/reply/directory-.-Debug-f5ebdc15457944623624.json
-/cmake-build-debug/.cmake/api/v1/reply/index-2024-08-15T14-21-39-0993.json
-/cmake-build-debug/.cmake/api/v1/reply/target-babymalloc-Debug-1a089152d653b886156a.json
-/cmake-build-debug/.cmake/api/v1/reply/target-test-Debug-5eac3cc8d020dfa6945a.json
-/cmake-build-debug/.cmake/api/v1/reply/toolchains-v1-1a22d9ad962073fe4f39.json
-/cmake-build-debug/CMakeFiles/3.26.4/CompilerIdC/a.out
-/cmake-build-debug/CMakeFiles/3.26.4/CompilerIdC/CMakeCCompilerId.c
-/cmake-build-debug/CMakeFiles/3.26.4/CMakeCCompiler.cmake
-/cmake-build-debug/CMakeFiles/3.26.4/CMakeDetermineCompilerABI_C.bin
-/cmake-build-debug/CMakeFiles/3.26.4/CMakeSystem.cmake
-/cmake-build-debug/CMakeFiles/babymalloc.dir/babymalloc.c.o
-/cmake-build-debug/CMakeFiles/test.dir/test.c.o
-/cmake-build-debug/CMakeFiles/clion-Debug-log.txt
-/cmake-build-debug/CMakeFiles/clion-environment.txt
-/cmake-build-debug/CMakeFiles/cmake.check_cache
-/cmake-build-debug/CMakeFiles/CMakeConfigureLog.yaml
-/cmake-build-debug/CMakeFiles/rules.ninja
-/cmake-build-debug/CMakeFiles/TargetDirectories.txt
-/cmake-build-debug/Testing/Temporary/LastTest.log
-/cmake-build-debug/.ninja_deps
-/cmake-build-debug/.ninja_log
-/cmake-build-debug/build.ninja
-/cmake-build-debug/cmake_install.cmake
-/cmake-build-debug/CMakeCache.txt
-/cmake-build-debug/libbabymalloc.a
-/cmake-build-debug/test
->>>>>>> Init Project
+
+/cmake-build-debug/
