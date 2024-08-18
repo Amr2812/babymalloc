@@ -13,7 +13,7 @@
 #define SET_USED(p) (*(uint64_t *) (p) |= 0x1)
 #define SET_FREE(p) (*(uint64_t *) (p) &= ~0x1)
 #define GET_NEXT_BLKP(p) ((char *) (p) + GET_SIZE(p) + 2 * WSIZE)
-#define GET_BLK_FOOTER(p) ((char *) (p) + GET_SIZE(p) + WSIZE)
+#define GET_BLK_FOOTERP(p) ((char *) (p) + GET_SIZE(p) + WSIZE)
 #define GET_PREV_BLKP(p) ((char *) (p) - (GET_SIZE((p) - WSIZE) + 2 * WSIZE))
 #define GET_PAYLOAD(p) ((char *) (p) + WSIZE)
 
@@ -66,7 +66,7 @@ void *babymalloc(size_t size) {
 void babyfree(void *ptr) {
     void *blkp = (char *) ptr - WSIZE;
     SET_FREE(blkp);
-    SET_FREE(GET_BLK_FOOTER(blkp));
+    SET_FREE(GET_BLK_FOOTERP(blkp));
     memset(ptr, 0, GET_SIZE(blkp));
     coalesce(blkp);
 }
@@ -85,9 +85,9 @@ static void *extend_heap(size_t size) {
     }
 
     *(uint64_t *) blkp = size;
-    *(uint64_t *) GET_BLK_FOOTER(blkp) = size;
+    *(uint64_t *) GET_BLK_FOOTERP(blkp) = size;
     SET_FREE(blkp);
-    SET_FREE(GET_BLK_FOOTER(blkp));
+    SET_FREE(GET_BLK_FOOTERP(blkp));
     return blkp;
 }
 
@@ -109,7 +109,7 @@ static void *find_fit(size_t size) {
 // size is needed to split the block
 static void insert_block(void *blkp, size_t size) {
     SET_USED(blkp); // set header
-    SET_USED(GET_BLK_FOOTER(blkp)); // set footer
+    SET_USED(GET_BLK_FOOTERP(blkp)); // set footer
 }
 
 static void coalesce(void *blkp) {
@@ -141,25 +141,25 @@ static void coalesce(void *blkp) {
 
     if (coalesce_prev && coalesce_next) {
         blk_size += GET_SIZE(prev_blkp) + GET_SIZE(next_blkp) + 4 * WSIZE;
-        void *next_blk_footer = GET_BLK_FOOTER(next_blkp);
+        void *next_blk_footerp = GET_BLK_FOOTERP(next_blkp);
         *(uint64_t *) prev_blkp = blk_size;
-        *(uint64_t *) next_blk_footer = blk_size;
+        *(uint64_t *) next_blk_footerp = blk_size;
         SET_FREE(prev_blkp);
-        SET_FREE(next_blk_footer);
+        SET_FREE(next_blk_footerp);
     } else if (coalesce_prev) {
         blk_size += GET_SIZE(prev_blkp) + 2 * WSIZE;
         *(uint64_t *) prev_blkp = blk_size;
-        void *blk_footer = GET_BLK_FOOTER(blkp);
-        *(uint64_t *) blk_footer = blk_size;
+        void *blk_footerp = GET_BLK_FOOTERP(blkp);
+        *(uint64_t *) blk_footerp = blk_size;
         SET_FREE(prev_blkp);
-        SET_FREE(blk_footer);
+        SET_FREE(blk_footerp);
     } else if (coalesce_next) {
         blk_size += GET_SIZE(next_blkp) + 2 * WSIZE;
-        void *next_blk_footer = GET_BLK_FOOTER(next_blkp);
+        void *next_blk_footerp = GET_BLK_FOOTERP(next_blkp);
         *(uint64_t *) blkp = blk_size;
-        *(uint64_t *) next_blk_footer = blk_size;
+        *(uint64_t *) next_blk_footerp = blk_size;
         SET_FREE(blkp);
-        SET_FREE(next_blk_footer);
+        SET_FREE(next_blk_footerp);
     }
 
     if (prev_blkp == heap_startp) {
