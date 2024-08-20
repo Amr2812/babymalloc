@@ -7,6 +7,19 @@
 
 #include "babymalloc.h"
 
+void test_new_heap() {
+    void *ptr = babymalloc(16);
+    void *ptr2 = babymalloc(16);
+    void *ptr3 = babymalloc(16);
+    babyfree(ptr);
+    babyfree(ptr2);
+    babyfree(ptr3);
+    new_heap();
+    void *ptr4 = babymalloc(48);
+
+    assert(ptr != ptr4);
+}
+
 void test_free_then_malloc_alignment() {
     void *ptr = babymalloc(10);
     void *ptr2 = babymalloc(10);
@@ -48,17 +61,14 @@ void test_next_and_prev_block_coalescing() {
     assert(ptr == ptr4);
 }
 
-void test_new_heap() {
-    void *ptr = babymalloc(16);
-    void *ptr2 = babymalloc(16);
-    void *ptr3 = babymalloc(16);
+void test_block_splitting() {
+    char *ptr = babymalloc(32);
     babyfree(ptr);
-    babyfree(ptr2);
-    babyfree(ptr3);
-    new_heap();
-    void *ptr4 = babymalloc(48);
+    char *ptr2 = babymalloc(8);
+    char *ptr3 = babymalloc(8);
 
-    assert(ptr != ptr4);
+    assert(ptr == ptr2);
+    assert(ptr3 - ptr2 == 24);
 }
 
 int main(int argc, char **argv) {
@@ -75,6 +85,9 @@ int main(int argc, char **argv) {
 
     new_heap();
     test_next_and_prev_block_coalescing();
+
+    new_heap();
+    test_block_splitting();
 
     printf("All tests passed!\n");
 

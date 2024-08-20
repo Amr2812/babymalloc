@@ -7,6 +7,7 @@
 
 // #define DEBUG
 #define WSIZE 8
+#define FULL_BLOCK_MIN_SIZE ((2 * WSIZE) + 8) // 2 words for header and footer, 8 bytes for payload
 #define ALIGN(size) (((size) + (WSIZE - 1)) & ~0x7)
 #define GET_SIZE(p) (*(uint64_t *) (p) & ~0x7)
 #define GET_USED(p) (*(uint64_t *) (p) & 0x1) // 0 for free, 1 for used
@@ -106,10 +107,20 @@ static void *find_fit(size_t size) {
     return NULL;
 }
 
-// size is needed to split the block
 static void insert_block(void *blkp, size_t size) {
-    SET_USED(blkp); // set header
-    SET_USED(GET_BLK_FOOTERP(blkp)); // set footer
+    if (GET_SIZE(blkp) - size >= FULL_BLOCK_MIN_SIZE) { // split the block if the remaining space is enough
+        *(uint64_t *) blkp = size;
+        *(uint64_t *) GET_BLK_FOOTERP(blkp) = size;
+
+        void *new_blkp = GET_NEXT_BLKP(blkp);
+        *(uint64_t *) new_blkp = GET_SIZE(blkp) - size - 2 * WSIZE;
+        *(uint64_t *) GET_BLK_FOOTERP(new_blkp) = GET_SIZE(blkp) - size - 2 * WSIZE;
+        SET_FREE(new_blkp);
+        SET_FREE(GET_BLK_FOOTERP(new_blkp));
+    }
+
+    SET_USED(blkp);
+    SET_USED(GET_BLK_FOOTERP(blkp));
 }
 
 static void coalesce(void *blkp) {
