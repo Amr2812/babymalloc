@@ -63,10 +63,10 @@ void test_next_and_prev_block_coalescing() {
 }
 
 void test_block_splitting() {
-    char *ptr = babymalloc(32);
+    char *ptr = (char *) babymalloc(32);
     babyfree(ptr);
-    char *ptr2 = babymalloc(8);
-    char *ptr3 = babymalloc(8);
+    char *ptr2 = (char *) babymalloc(8);
+    char *ptr3 = (char *) babymalloc(8);
 
     assert(ptr == ptr2);
     assert(ptr3 - ptr2 == 24);
