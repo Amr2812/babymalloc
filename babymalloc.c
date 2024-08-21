@@ -110,14 +110,14 @@ static void *find_fit(size_t size) {
 
 static void insert_block(void *blkp, size_t size) {
     if (GET_SIZE(blkp) - size >= FULL_BLOCK_MIN_SIZE) { // split the block if the remaining space is enough
-        size_t blk_size = GET_SIZE(blkp);
+        size_t new_blk_size = GET_SIZE(blkp) - size - 2 * WSIZE;
 
         *(uint64_t *) blkp = size;
         *(uint64_t *) GET_BLK_FOOTERP(blkp) = size;
 
         void *new_blkp = GET_NEXT_BLKP(blkp);
-        *(uint64_t *) new_blkp = blk_size - size - 2 * WSIZE;
-        *(uint64_t *) GET_BLK_FOOTERP(new_blkp) = blk_size - size - 2 * WSIZE;
+        *(uint64_t *) new_blkp = new_blk_size;
+        *(uint64_t *) GET_BLK_FOOTERP(new_blkp) = new_blk_size;
         SET_FREE(new_blkp);
         SET_FREE(GET_BLK_FOOTERP(new_blkp));
     }
