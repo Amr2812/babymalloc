@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <inttypes.h>
-#include <errno.h>
 
 #define WSIZE 8
 #define FULL_BLOCK_MIN_SIZE ((2 * WSIZE) + 8) // 2 words for header and footer, 8 bytes for payload
@@ -79,7 +78,6 @@ void new_heap() {
 static void *extend_heap(size_t size) {
     void *blkp = sbrk((intptr_t) size + 2 * WSIZE);  // 2 words for header and footer
     if (blkp == (void *) -1) {
-        fprintf(stderr, "sbrk failed to allocate %zu: %s (errno %d)\n", size, strerror(errno), errno);
         return NULL;
     }
 
