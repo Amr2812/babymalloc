@@ -28,13 +28,16 @@ static void insert_block(void *blkp, size_t size);
 static void coalesce(void *blkp);
 
 void *babymalloc(size_t size) {
-    size = ALIGN(size);
-    if (size > INTPTR_MAX - 2 * WSIZE) {
+    size_t padding = -size & (WSIZE - 1);
+    size_t aligned_size = ALIGN(size);
+
+    // check for exceeding the maximum size or integer overflow
+    if (aligned_size > INTPTR_MAX - 2 * WSIZE || size > SIZE_MAX - padding) {
         return NULL;
     }
 
     if (!heap_startp) {
-        heap_startp = extend_heap(size);
+        heap_startp = extend_heap(aligned_size);
         if (!heap_startp) {
             return NULL;
         }
@@ -42,19 +45,19 @@ void *babymalloc(size_t size) {
         heap_endp = GET_NEXT_BLKP(heap_startp);
     }
 
-    void *blkp = find_fit(size);
+    void *blkp = find_fit(aligned_size);
     if (blkp) {
-        insert_block(blkp, size);
+        insert_block(blkp, aligned_size);
         return GET_PAYLOAD(blkp);
     }
 
-    blkp = extend_heap(size);
+    blkp = extend_heap(aligned_size);
     if (!blkp) {
         return NULL;
     }
 
     heap_endp = GET_NEXT_BLKP(blkp);
-    insert_block(blkp, size);
+    insert_block(blkp, aligned_size);
     return GET_PAYLOAD(blkp);
 }
 

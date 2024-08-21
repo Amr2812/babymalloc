@@ -76,7 +76,10 @@ void test_block_splitting() {
 
 void test_max_size() {
     void *ptr = babymalloc(INTPTR_MAX - 2 * WSIZE);
+    void *ptr2 = babymalloc(SIZE_MAX); // test for overflow
+
     assert(ptr == NULL);
+    assert(ptr2 == NULL);
 }
 
 int main(int argc, char **argv) {
