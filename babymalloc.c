@@ -6,7 +6,6 @@
 #include <string.h>
 #include <inttypes.h>
 
-// #define DEBUG
 #define WSIZE 8
 #define FULL_BLOCK_MIN_SIZE ((2 * WSIZE) + 8) // 2 words for header and footer, 8 bytes for payload
 #define ALIGN(size) (((size) + (WSIZE - 1)) & ~0x7)
@@ -18,12 +17,6 @@
 #define GET_BLK_FOOTERP(p) ((char *) (p) + GET_SIZE(p) + WSIZE)
 #define GET_PREV_BLKP(p) ((char *) (p) - (GET_SIZE((p) - WSIZE) + 2 * WSIZE))
 #define GET_PAYLOAD(p) ((char *) (p) + WSIZE)
-
-#ifdef DEBUG
-#define debug_print(fmt, ...) printf(fmt, __VA_ARGS__)
-#else
-#define debug_print(fmt, ...)
-#endif
 
 void *heap_startp;
 void *heap_endp;
@@ -42,8 +35,7 @@ void *babymalloc(size_t size) {
     if (!heap_startp) {
         heap_startp = extend_heap(size);
         heap_endp = GET_NEXT_BLKP(heap_startp);
-        debug_print("heap_startp: %p\n", heap_startp);
-        debug_print("heap_startp value: %lu\n", *(uint64_t *) heap_startp);
+
         if (heap_startp == (void *) -1) {
             return NULL;
         }
@@ -97,8 +89,6 @@ static void *extend_heap(size_t size) {
 static void *find_fit(size_t size) {
     void *blkp = heap_startp;
 
-    debug_print("blkp: %p\n", blkp);
-    debug_print("blkp value: %lu\n", *(uint64_t *) blkp);
     while (*(uint64_t *) blkp) {
         if (!GET_USED(blkp) && *(uint64_t *) blkp >= size) {
             return blkp;
