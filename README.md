@@ -20,4 +20,4 @@ This is a dynamic memory allocator that utilizes simple techniques:
 - Alignment:
   - The allocator aligns the blocks to 8 bytes.
 - 64/32-bit Linux:
-  - The allocator works on both 64-bit and 32-bit linux systems and most probably lower bit systems too.
+  - The allocator should work on both 64-bit and 32-bit linux systems and most probably lower bit systems too.
