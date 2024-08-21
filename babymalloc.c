@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <inttypes.h>
+#include <errno.h>
 
 #define WSIZE 8
 #define FULL_BLOCK_MIN_SIZE ((2 * WSIZE) + 8) // 2 words for header and footer, 8 bytes for payload
@@ -28,17 +29,17 @@ static void coalesce(void *blkp);
 
 void *babymalloc(size_t size) {
     size = ALIGN(size);
-    if (size > INTPTR_MAX) {
+    if (size > INTPTR_MAX - 2 * WSIZE) {
         return NULL;
     }
 
     if (!heap_startp) {
         heap_startp = extend_heap(size);
-        heap_endp = GET_NEXT_BLKP(heap_startp);
-
-        if (heap_startp == (void *) -1) {
+        if (heap_startp == NULL) {
             return NULL;
         }
+
+        heap_endp = GET_NEXT_BLKP(heap_startp);
     }
 
     void *blkp = find_fit(size);
@@ -75,6 +76,7 @@ void new_heap() {
 static void *extend_heap(size_t size) {
     void *blkp = sbrk((intptr_t) size + 2 * WSIZE);  // 2 words for header and footer
     if (blkp == (void *) -1) {
+        fprintf(stderr, "sbrk failed to allocate %zu: %s (errno %d)\n", size, strerror(errno), errno);
         return NULL;
     }
 

@@ -8,6 +8,8 @@
 
 #include "babymalloc.h"
 
+#define WSIZE 8
+
 void test_new_heap() {
     void *ptr = babymalloc(16);
     void *ptr2 = babymalloc(16);
@@ -73,7 +75,7 @@ void test_block_splitting() {
 }
 
 void test_max_size() {
-    void *ptr = babymalloc(INTPTR_MAX);
+    void *ptr = babymalloc(INTPTR_MAX - 2 * WSIZE);
     assert(ptr == NULL);
 }
 
