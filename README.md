@@ -1,5 +1,5 @@
 # babymalloc
-A dynamic memory allocator in C
+A dynamic memory allocator in C, heavily inspired by the [CS:APP malloc lab](http://csapp.cs.cmu.edu/3e/labs.html) from the CMU course [Intro to Computer Systems](https://www.cs.cmu.edu/afs/cs/academic/class/15213-f15/www/schedule.html).
 
 ### Description
 This is a dynamic memory allocator that utilizes simple techniques:
