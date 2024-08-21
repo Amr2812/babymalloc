@@ -35,7 +35,7 @@ void *babymalloc(size_t size) {
 
     if (!heap_startp) {
         heap_startp = extend_heap(size);
-        if (heap_startp == NULL) {
+        if (!heap_startp) {
             return NULL;
         }
 
