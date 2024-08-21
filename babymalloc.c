@@ -147,25 +147,22 @@ static void coalesce(void *blkp) {
 
     if (coalesce_prev && coalesce_next) {
         blk_size += GET_SIZE(prev_blkp) + GET_SIZE(next_blkp) + 4 * WSIZE;
-        void *next_blk_footerp = GET_BLK_FOOTERP(next_blkp);
         *(uint64_t *) prev_blkp = blk_size;
-        *(uint64_t *) next_blk_footerp = blk_size;
+        *(uint64_t *) GET_BLK_FOOTERP(next_blkp) = blk_size;
         SET_FREE(prev_blkp);
-        SET_FREE(next_blk_footerp);
+        SET_FREE(GET_BLK_FOOTERP(next_blkp));
     } else if (coalesce_prev) {
         blk_size += GET_SIZE(prev_blkp) + 2 * WSIZE;
         *(uint64_t *) prev_blkp = blk_size;
-        void *blk_footerp = GET_BLK_FOOTERP(blkp);
-        *(uint64_t *) blk_footerp = blk_size;
+        *(uint64_t *) GET_BLK_FOOTERP(blkp) = blk_size;
         SET_FREE(prev_blkp);
-        SET_FREE(blk_footerp);
+        SET_FREE(GET_BLK_FOOTERP(blkp));
     } else if (coalesce_next) {
         blk_size += GET_SIZE(next_blkp) + 2 * WSIZE;
-        void *next_blk_footerp = GET_BLK_FOOTERP(next_blkp);
         *(uint64_t *) blkp = blk_size;
-        *(uint64_t *) next_blk_footerp = blk_size;
+        *(uint64_t *) GET_BLK_FOOTERP(next_blkp) = blk_size;
         SET_FREE(blkp);
-        SET_FREE(next_blk_footerp);
+        SET_FREE(GET_BLK_FOOTERP(next_blkp));
     }
 
     if (prev_blkp == heap_startp) {
