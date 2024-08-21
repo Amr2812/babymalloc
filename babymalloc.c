@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <string.h>
+#include <inttypes.h>
 
 // #define DEBUG
 #define WSIZE 8
@@ -34,7 +35,7 @@ static void coalesce(void *blkp);
 
 void *babymalloc(size_t size) {
     size = ALIGN(size);
-    if (size > INT64_MAX) {
+    if (size > INTPTR_MAX) {
         return NULL;
     }
 
@@ -182,9 +183,10 @@ void print_heap() {
     void *blkp = heap_startp;
     while (*(uint64_t *) blkp) {
         if (GET_USED(blkp)) {
-            printf("Block at %p: size %lu %lu, used\n", blkp, GET_SIZE(blkp), GET_SIZE(blkp + GET_SIZE(blkp) + WSIZE));
+            // use PRIu64 to print uint64_t
+            printf("Block at %p: %" PRIu64 " size %" PRIu64 ", used\n", blkp, GET_SIZE(blkp), GET_SIZE(GET_BLK_FOOTERP(blkp)));
         } else {
-            printf("Block at %p: size %lu %lu, free\n", blkp, GET_SIZE(blkp), GET_SIZE(blkp + GET_SIZE(blkp) + WSIZE));
+            printf("Block at %p: %" PRIu64 " size %" PRIu64 ", free\n", blkp, GET_SIZE(blkp), GET_SIZE(GET_BLK_FOOTERP(blkp)));
         }
         blkp = GET_NEXT_BLKP(blkp);
     }

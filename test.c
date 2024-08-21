@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "babymalloc.h"
 
@@ -71,6 +72,11 @@ void test_block_splitting() {
     assert(ptr3 - ptr2 == 24);
 }
 
+void test_max_size() {
+    void *ptr = babymalloc(INTPTR_MAX);
+    assert(ptr == NULL);
+}
+
 int main(int argc, char **argv) {
     test_new_heap();
 
@@ -88,6 +94,9 @@ int main(int argc, char **argv) {
 
     new_heap();
     test_block_splitting();
+
+    new_heap();
+    test_max_size();
 
     printf("All tests passed!\n");
 
