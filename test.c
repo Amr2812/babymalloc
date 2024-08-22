@@ -8,7 +8,7 @@
 
 #include "babymalloc.h"
 
-#define WSIZE 8
+#define WSIZE sizeof(size_t)
 
 void test_new_heap() {
     void *ptr = babymalloc(16);
@@ -24,54 +24,54 @@ void test_new_heap() {
 }
 
 void test_free_then_malloc_alignment() {
-    void *ptr = babymalloc(10);
-    void *ptr2 = babymalloc(10);
+    void *ptr = babymalloc(WSIZE - 1);
+    void *ptr2 = babymalloc(WSIZE - 1);
     babyfree(ptr);
-    void *ptr3 = babymalloc(16);
+    void *ptr3 = babymalloc(WSIZE);
 
     assert(ptr == ptr3);
 }
 
 void test_prev_block_coalescing() {
-    void *ptr = babymalloc(16);
-    void *ptr2 = babymalloc(16);
+    void *ptr = babymalloc(WSIZE * 2);
+    void *ptr2 = babymalloc(WSIZE * 2);
     babyfree(ptr);
     babyfree(ptr2);
-    void *ptr3 = babymalloc(32);
+    void *ptr3 = babymalloc(WSIZE * 4);
 
     assert(ptr == ptr3);
 }
 
 void test_next_block_coalescing() {
-    void *ptr = babymalloc(16);
-    void *ptr2 = babymalloc(16);
+    void *ptr = babymalloc(WSIZE * 2); // 16 on 64-bit systems
+    void *ptr2 = babymalloc(WSIZE * 2);
     babyfree(ptr2);
     babyfree(ptr);
-    void *ptr3 = babymalloc(32);
+    void *ptr3 = babymalloc(WSIZE * 4); // 32 on 64-bit systems
 
     assert(ptr == ptr3);
 }
 
 void test_next_and_prev_block_coalescing() {
-    void *ptr = babymalloc(16);
-    void *ptr2 = babymalloc(16);
-    void *ptr3 = babymalloc(16);
+    void *ptr = babymalloc(WSIZE * 2); // 16 on 64-bit systems
+    void *ptr2 = babymalloc(WSIZE * 2);
+    void *ptr3 = babymalloc(WSIZE * 2);
     babyfree(ptr);
     babyfree(ptr3);
     babyfree(ptr2);
-    void *ptr4 = babymalloc(48);
+    void *ptr4 = babymalloc(WSIZE * 6); // 48 on 64-bit systems
 
     assert(ptr == ptr4);
 }
 
 void test_block_splitting() {
-    char *ptr = (char *) babymalloc(32);
+    char *ptr = (char *) babymalloc(WSIZE * 4); // 32 on 64-bit systems
     babyfree(ptr);
-    char *ptr2 = (char *) babymalloc(8);
-    char *ptr3 = (char *) babymalloc(8);
+    char *ptr2 = (char *) babymalloc(WSIZE); // 8 on 64-bit systems
+    char *ptr3 = (char *) babymalloc(WSIZE);
 
     assert(ptr == ptr2);
-    assert(ptr3 - ptr2 == 24);
+    assert(ptr3 - ptr2 == WSIZE * 3); // 24 on 64-bit systems
 }
 
 void test_max_size() {

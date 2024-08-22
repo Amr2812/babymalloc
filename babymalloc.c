@@ -6,13 +6,13 @@
 #include <string.h>
 #include <inttypes.h>
 
-#define WSIZE 8
-#define FULL_BLOCK_MIN_SIZE ((2 * WSIZE) + 8) // 2 words for header and footer, 8 bytes for payload
-#define ALIGN(size) (((size) + (WSIZE - 1)) & ~0x7)
-#define GET_SIZE(p) (*(uint64_t *) (p) & ~0x7)
-#define GET_USED(p) (*(uint64_t *) (p) & 0x1) // 0 for free, 1 for used
-#define SET_USED(p) (*(uint64_t *) (p) |= 0x1)
-#define SET_FREE(p) (*(uint64_t *) (p) &= ~0x1)
+#define WSIZE sizeof(size_t)
+#define FULL_BLOCK_MIN_SIZE ((2 * WSIZE) + WSIZE) // 2 words for header and footer, 8 bytes for payload
+#define ALIGN(size) (((size) + (WSIZE - 1)) & ~(WSIZE - 1))
+#define GET_SIZE(p) (*(size_t *) (p) & ~(WSIZE - 1))
+#define GET_USED(p) (*(size_t *) (p) & 0x1) // 0 for free, 1 for used
+#define SET_USED(p) (*(size_t *) (p) |= 0x1)
+#define SET_FREE(p) (*(size_t *) (p) &= ~0x1)
 #define GET_NEXT_BLKP(p) ((char *) (p) + GET_SIZE(p) + 2 * WSIZE)
 #define GET_BLK_FOOTERP(p) ((char *) (p) + GET_SIZE(p) + WSIZE)
 #define GET_PREV_BLKP(p) ((char *) (p) - (GET_SIZE((p) - WSIZE) + 2 * WSIZE))
@@ -81,8 +81,8 @@ static void *extend_heap(size_t size) {
         return NULL;
     }
 
-    *(uint64_t *) blkp = size;
-    *(uint64_t *) GET_BLK_FOOTERP(blkp) = size;
+    *(size_t *) blkp = size;
+    *(size_t *) GET_BLK_FOOTERP(blkp) = size;
     SET_FREE(blkp);
     SET_FREE(GET_BLK_FOOTERP(blkp));
     return blkp;
@@ -92,8 +92,8 @@ static void *extend_heap(size_t size) {
 static void *find_fit(size_t size) {
     void *blkp = heap_startp;
 
-    while (*(uint64_t *) blkp) {
-        if (!GET_USED(blkp) && *(uint64_t *) blkp >= size) {
+    while (*(size_t *) blkp) {
+        if (!GET_USED(blkp) && *(size_t *) blkp >= size) {
             return blkp;
         }
         blkp = GET_NEXT_BLKP(blkp);
@@ -105,12 +105,12 @@ static void insert_block(void *blkp, size_t size) {
     if (GET_SIZE(blkp) - size >= FULL_BLOCK_MIN_SIZE) { // split the block if the remaining space is enough
         size_t new_blk_size = GET_SIZE(blkp) - size - 2 * WSIZE;
 
-        *(uint64_t *) blkp = size;
-        *(uint64_t *) GET_BLK_FOOTERP(blkp) = size;
+        *(size_t *) blkp = size;
+        *(size_t *) GET_BLK_FOOTERP(blkp) = size;
 
         void *new_blkp = GET_NEXT_BLKP(blkp);
-        *(uint64_t *) new_blkp = new_blk_size;
-        *(uint64_t *) GET_BLK_FOOTERP(new_blkp) = new_blk_size;
+        *(size_t *) new_blkp = new_blk_size;
+        *(size_t *) GET_BLK_FOOTERP(new_blkp) = new_blk_size;
         SET_FREE(new_blkp);
         SET_FREE(GET_BLK_FOOTERP(new_blkp));
     }
@@ -148,37 +148,36 @@ static void coalesce(void *blkp) {
 
     if (coalesce_prev && coalesce_next) {
         blk_size += GET_SIZE(prev_blkp) + GET_SIZE(next_blkp) + 4 * WSIZE;
-        *(uint64_t *) prev_blkp = blk_size;
-        *(uint64_t *) GET_BLK_FOOTERP(next_blkp) = blk_size;
+        *(size_t *) prev_blkp = blk_size;
+        *(size_t *) GET_BLK_FOOTERP(next_blkp) = blk_size;
         SET_FREE(prev_blkp);
         SET_FREE(GET_BLK_FOOTERP(next_blkp));
     } else if (coalesce_prev) {
         blk_size += GET_SIZE(prev_blkp) + 2 * WSIZE;
-        *(uint64_t *) prev_blkp = blk_size;
-        *(uint64_t *) GET_BLK_FOOTERP(blkp) = blk_size;
+        *(size_t *) prev_blkp = blk_size;
+        *(size_t *) GET_BLK_FOOTERP(blkp) = blk_size;
         SET_FREE(prev_blkp);
         SET_FREE(GET_BLK_FOOTERP(blkp));
     } else if (coalesce_next) {
         blk_size += GET_SIZE(next_blkp) + 2 * WSIZE;
-        *(uint64_t *) blkp = blk_size;
-        *(uint64_t *) GET_BLK_FOOTERP(next_blkp) = blk_size;
+        *(size_t *) blkp = blk_size;
+        *(size_t *) GET_BLK_FOOTERP(next_blkp) = blk_size;
         SET_FREE(blkp);
         SET_FREE(GET_BLK_FOOTERP(next_blkp));
     }
 
     if (prev_blkp == heap_startp) {
-        *(uint64_t *) heap_startp = blk_size;
+        *(size_t *) heap_startp = blk_size;
     }
 }
 
 void print_heap() {
     void *blkp = heap_startp;
-    while (*(uint64_t *) blkp) {
+    while (*(size_t *) blkp) {
         if (GET_USED(blkp)) {
-            // use PRIu64 to print uint64_t
-            printf("Block at %p: %" PRIu64 " size %" PRIu64 ", used\n", blkp, GET_SIZE(blkp), GET_SIZE(GET_BLK_FOOTERP(blkp)));
+            printf("Block at %p: %zu size %zu, used\n", blkp, GET_SIZE(blkp), GET_SIZE(GET_BLK_FOOTERP(blkp)));
         } else {
-            printf("Block at %p: %" PRIu64 " size %" PRIu64 ", free\n", blkp, GET_SIZE(blkp), GET_SIZE(GET_BLK_FOOTERP(blkp)));
+            printf("Block at %p: %zu size %zu, free\n", blkp, GET_SIZE(blkp), GET_SIZE(GET_BLK_FOOTERP(blkp)));
         }
         blkp = GET_NEXT_BLKP(blkp);
     }
