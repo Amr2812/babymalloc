@@ -21,4 +21,4 @@ This is a dynamic memory allocator that utilizes simple techniques:
   - The allocator aligns the blocks to the word size of the CPU.
 - 64/32-bit Linux:
   - The allocator works on both 64-bit and 32-bit linux systems.
-  - It works on lower bit systems too, but it's not tested on systems lower the 32-bit.
+  - It works on lower bit systems too, but it's not tested on systems lower than 32-bit.
