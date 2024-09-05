@@ -19,6 +19,5 @@ This is a dynamic memory allocator that utilizes simple techniques:
   - The allocator uses the sbrk system call to request more memory from the kernel when the heap is full.
 - Alignment:
   - The allocator aligns the blocks to the word size of the CPU.
-- 64/32-bit Linux:
-  - The allocator works on both 64-bit and 32-bit linux systems.
-  - It works on lower bit systems too, but it's not tested on systems lower than 32-bit.
+- Platform Compatibility:
+  - The allocator works on 64-bit, 32-bit and smaller CPUs on UNIX-like systems.
