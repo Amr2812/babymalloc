@@ -7,7 +7,7 @@
 #include <inttypes.h>
 
 #define WSIZE sizeof(size_t)
-#define FULL_BLOCK_MIN_SIZE ((2 * WSIZE) + WSIZE) // 2 words for header and footer, 8 bytes for payload
+#define FULL_BLOCK_MIN_SIZE ((2 * WSIZE) + WSIZE) // 2 words for header and footer, 1 word for payload
 #define ALIGN(size) (((size) + (WSIZE - 1)) & ~(WSIZE - 1))
 #define GET_SIZE(p) (*(size_t *) (p) & ~(WSIZE - 1))
 #define GET_USED(p) (*(size_t *) (p) & 0x1) // 0 for free, 1 for used
